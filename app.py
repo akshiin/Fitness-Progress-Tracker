@@ -1,4 +1,5 @@
 import streamlit as st
+import sqlite3
 import pandas as pd
 from datetime import date
 
@@ -8,8 +9,11 @@ st.title("Fitness Progress Tracker")
 
 st.divider()
 
-data = pd.read_csv("data.csv", index_col=False)
-records = pd.read_csv("records.csv", index_col=False)
+conn = sqlite3.connect("fitness_data.db")
+cursor = conn.cursor()
+
+data = pd.read_sql("SELECT * FROM workout", conn)
+records = pd.read_sql("SELECT * FROM records", conn)
 
 num_max_pushups_per_set = int(records['max_push_ups'].max())
 num_max_pullups_per_set = int(records['max_pull_ups'].max())
@@ -48,7 +52,8 @@ if max_pullups_per_set > num_max_pullups_per_set:
     num_max_pullups_per_set = max_pullups_per_set
 
 if 'submitted_today' not in st.session_state:
-    st.session_state['submitted_today'] = str(data['date'].max()) == str(date.today())
+    st.session_state['submitted_today'] = str(
+        data['date'].max()) == str(date.today())
 
 disabled = st.session_state['submitted_today']
 
@@ -58,26 +63,12 @@ is_submitted = st.sidebar.button(
 )
 
 if is_submitted:
-    new_row = {
-        'date': current_date,
-        'push_ups': push_ups,
-        'pull_ups': pull_ups
-    }
-
-    new_records = {
-        'date': current_date,
-        'max_push_ups': num_max_pushups_per_set,
-        'max_pull_ups': num_max_pullups_per_set
-    }
-
-    data.loc[len(data)] = new_row
-    records.loc[len(records)] = new_records
-    data.to_csv('data.csv', index=False)
-    records.to_csv('records.csv', index=False)
-
-    # Disable the button after submission
-    st.session_state['submitted_today'] = True
-
+    cursor.execute("INSERT OR REPLACE INTO workout VALUES (?, ?, ?)",
+                   (current_date, push_ups, pull_ups))
+    cursor.execute("INSERT OR REPLACE INTO records VALUES (?, ?, ?)",
+                   (current_date, num_max_pushups_per_set, num_max_pullups_per_set))
+    conn.commit()
+    st.success("Workout data saved!")
 
 col1, col2 = st.columns(2)
 
@@ -116,3 +107,6 @@ with col2:
         y='pull_ups',
         height=300
     )
+
+st.subheader(body="Workout History")
+st.dataframe(data=data)
