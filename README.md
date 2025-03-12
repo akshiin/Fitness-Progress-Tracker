@@ -8,13 +8,14 @@ The **Fitness Progress Tracker** is a **Streamlit** web application designed to 
 - **Progress Visualization**: View workout history with interactive **line charts**.
 - **Personal Records Tracking**: Automatically updates the **max push-ups and pull-ups per set**.
 - **One Submission Per Day**: Prevents multiple entries for the same day.
-- **Persistent Data Storage**: Saves progress in **CSV files** (`data.csv` and `records.csv`).
+- **Persistent Data Storage**: Saves progress in **database** (`workout` and `records` tables).
 
 ## Installation & Setup
 ### Install Dependencies
 Ensure you have **Python** installed, then install the required packages:
 ```bash
 pip install -r requirements.txt
+pip install sqlite3
 ```
 
 ### Run the App
@@ -26,12 +27,15 @@ streamlit run app.py
 ## File Structure
 ```
 Fitness-Progress-Tracker/
-├── app.py          # Main Streamlit application
-├── data.csv        # Stores daily push-up and pull-up logs
-├── records.csv     # Stores max push-ups and pull-ups per set
-├── requirements.txt # Dependencies
-├── .gitignore      # Git ignore file
-└── README.md       # Project documentation
+├── app.py             # Main Streamlit application
+├── data.csv           # Stores daily push-up and pull-up logs
+├── db.py              # Database initialization
+├── fitness_data.db    # Database file
+├── LICENSE            # MIT License file
+├── records.csv        # Stores max push-ups and pull-ups per set
+├── requirements.txt   # Dependencies
+├── .gitignore         # Git ignore file
+└── README.md          # Project documentation
 ```
 
 ## Usage
@@ -46,7 +50,6 @@ Fitness-Progress-Tracker/
 
 ## Future Improvements
 - Add authorization.
-- Change CSV files to real databases.
 - Add calendar view for past records.
 - Improve data visualization with bar charts.
 - Export progress data as an Excel file.
