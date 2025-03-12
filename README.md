@@ -58,5 +58,5 @@ This project is open-source under the **MIT License**.
 For questions or suggestions, feel free to reach out!
 
 ---
-Start tracking your fitness progress today!
+Start tracking your fitness progress today and **stay hard!💪🏼**
 
