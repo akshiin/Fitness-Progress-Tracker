@@ -1,5 +1,6 @@
 import streamlit as st
 import sqlite3
+import os
 import pandas as pd
 from datetime import date
 
@@ -18,57 +19,82 @@ records = pd.read_sql("SELECT * FROM records", conn)
 num_max_pushups_per_set = int(records['max_push_ups'].max())
 num_max_pullups_per_set = int(records['max_pull_ups'].max())
 
-current_date = st.sidebar.date_input(
-    label='Date',
-    value='today',
-    min_value='today',
-    format='YYYY-MM-DD'
-)
 
-push_ups = st.sidebar.number_input(
-    label='Push-ups',
-    min_value=0
-)
+def authenticate_user():
 
-pull_ups = st.sidebar.number_input(
-    label='Pull-ups',
-    min_value=0
-)
+    st.sidebar.subheader(body="Login")
+    username_input = st.sidebar.text_input(label="Username")
+    password_input = st.sidebar.text_input(label="Password", type="password")
 
-max_pushups_per_set = st.sidebar.number_input(
-    label="Max push-ups per set",
-    value=num_max_pushups_per_set
-)
+    # Get credentials from environment variables
+    username = os.getenv("FITNESS_USERNAME")
+    password = os.getenv("FITNESS_PASSWORD")
 
-if max_pushups_per_set > num_max_pushups_per_set:
-    num_max_pushups_per_set = max_pushups_per_set
+    if username_input == username and password_input == password:
+        return True
+    return False
 
-max_pullups_per_set = st.sidebar.number_input(
-    label="Max pull-ups per set",
-    value=num_max_pullups_per_set
-)
 
-if max_pullups_per_set > num_max_pullups_per_set:
-    num_max_pullups_per_set = max_pullups_per_set
+authenticated = authenticate_user()
 
-if 'submitted_today' not in st.session_state:
-    st.session_state['submitted_today'] = str(
-        data['date'].max()) == str(date.today())
+if authenticated:
 
-disabled = st.session_state['submitted_today']
+    st.sidebar.subheader(body="Data Entry")
 
-is_submitted = st.sidebar.button(
-    label='Submit',
-    disabled=disabled
-)
+    current_date = st.sidebar.date_input(
+        label='Date',
+        value='today',
+        min_value='today',
+        format='YYYY-MM-DD'
+    )
 
-if is_submitted:
-    cursor.execute("INSERT OR REPLACE INTO workout VALUES (?, ?, ?)",
-                   (current_date, push_ups, pull_ups))
-    cursor.execute("INSERT OR REPLACE INTO records VALUES (?, ?, ?)",
-                   (current_date, num_max_pushups_per_set, num_max_pullups_per_set))
-    conn.commit()
-    st.success("Workout data saved!")
+    push_ups = st.sidebar.number_input(
+        label='Push-ups',
+        min_value=0
+    )
+
+    pull_ups = st.sidebar.number_input(
+        label='Pull-ups',
+        min_value=0
+    )
+
+    max_pushups_per_set = st.sidebar.number_input(
+        label="Max push-ups per set",
+        value=num_max_pushups_per_set
+    )
+
+    if max_pushups_per_set > num_max_pushups_per_set:
+        num_max_pushups_per_set = max_pushups_per_set
+
+    max_pullups_per_set = st.sidebar.number_input(
+        label="Max pull-ups per set",
+        value=num_max_pullups_per_set
+    )
+
+    if max_pullups_per_set > num_max_pullups_per_set:
+        num_max_pullups_per_set = max_pullups_per_set
+
+    if 'submitted_today' not in st.session_state:
+        st.session_state['submitted_today'] = str(
+            data['date'].max()) == str(date.today())
+
+    disabled = st.session_state['submitted_today']
+
+    is_submitted = st.sidebar.button(
+        label='Submit',
+        disabled=disabled
+    )
+
+    if is_submitted:
+        cursor.execute("INSERT OR REPLACE INTO workout VALUES (?, ?, ?)",
+                       (current_date, push_ups, pull_ups))
+        cursor.execute("INSERT OR REPLACE INTO records VALUES (?, ?, ?)",
+                       (current_date, num_max_pushups_per_set, num_max_pullups_per_set))
+        conn.commit()
+        st.success("Workout data saved!")
+
+else:
+    st.warning("Please log in to access the data entry features.")
 
 col1, col2 = st.columns(2)
 
